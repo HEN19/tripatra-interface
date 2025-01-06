@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 // Create a context for managing user authentication state
 const AuthContext = createContext();
+const token = localStorage.getItem("authToken");
+
 
 // Custom hook to access the authentication context
 export const useAuth = () => {
@@ -14,23 +16,23 @@ export const useAuth = () => {
 // AuthProvider component to wrap around the application and provide state
 // eslint-disable-next-line react/prop-types
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // Track the logged-in user
-    const [error, setError] = useState(""); // Track any errors
-    const [loading, setLoading] = useState(false); // Track loading state
+    const [user, setUser] = useState(null); 
+    const [error, setError] = useState(""); 
+    const [loading, setLoading] = useState(false); 
     const navigate = useNavigate();
 
     // Login function
     const handleLogin = async (username, password) => {
     setLoading(true);
     try {
-        const response = await login(username, password); // Call the login API
+        const response = await login(username, password); 
         const apiData = response.API;
 
         if (apiData.success) {
-            const token = apiData.content; // Extract the JWT token from the response
-            localStorage.setItem("authToken", token); // Save the token in localStorage
-            setUser({ username, token }); // Optionally set user state for context
-            setError(""); // Clear any previous errors
+            const token = apiData.content; 
+            localStorage.setItem("authToken", token); 
+            setUser({ username, token }); 
+            setError(""); 
         } else {
             throw new Error(apiData.message || "Login failed");
         }
@@ -46,8 +48,8 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         try {
             const data = await register(username, password, firstname,lastname, gender,telephone,email, address);
-            setUser(data); // Set the user object after successful registration
-            setError(""); // Clear any previous errors
+            setUser(data); 
+            setError(""); 
         } catch (error) {
             setError(error);
         } finally {
@@ -56,12 +58,18 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Get user profile function (for authenticated user)
-    const handleProfile = async (token) => {
+    const handleProfile = async () => {
+        setLoading(true)
+        
         try {
-            const data = await getProfile(token); // Pass token to the API to fetch profile data
-            setUser(data); // Set user data
+            const response = await getProfile(token);
+            setUser(response.API.content);        
         } catch (error) {
-            setError(error);
+            const errorMessage = error.response?.data?.message || "Failed to fetch user";
+            setError(errorMessage)
+            throw new Error(errorMessage);        
+        } finally {
+            setLoading(false);
         }
     };
 

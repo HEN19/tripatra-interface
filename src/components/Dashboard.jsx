@@ -1,21 +1,22 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
-import { Layout, Menu, Typography, Button } from "antd";
+import { Layout, Menu, Input, Form,Typography, Table, Select } from "antd";
 import { useAuth } from "../context/AuthContext";
+import { useProduct } from "../context/ProductContext";
 import { useNavigate } from "react-router-dom";
-import {
-    DashboardOutlined,
-    UserOutlined,
-    LogoutOutlined,
-} from "@ant-design/icons";
+import { DashboardOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
+const { Option } = Select;
 
 const Dashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, handleProfile } = useAuth();
+    const { products, loading, error, handleGetListProduct } = useProduct();
     const navigate = useNavigate();
-    const [selectedMenu, setSelectedMenu] = useState("dashboard"); // Keep track of selected menu
+    const [selectedMenu, setSelectedMenu] = useState();
+    const [isDashboardFetched, setIsDashboardFetched] = useState(false);
+    const [isProfileFetched, setIsProfileFetched] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -23,12 +24,22 @@ const Dashboard = () => {
         }
     }, [user, navigate]);
 
+    useEffect(() => {
+        if (selectedMenu === "dashboard" && !isDashboardFetched) {
+            handleGetListProduct();
+            setIsDashboardFetched(true);
+        } else if (selectedMenu === "profile" && !isProfileFetched) {
+            handleProfile();
+            setIsProfileFetched(true);
+        }
+    }, [selectedMenu, handleGetListProduct, handleProfile, isDashboardFetched, isProfileFetched]);
+
     if (!user) {
-        return null; 
+        return null;
     }
 
     const handleMenuClick = ({ key }) => {
-        setSelectedMenu(key); 
+        setSelectedMenu(key);
         if (key === "logout") {
             logout();
         }
@@ -38,42 +49,126 @@ const Dashboard = () => {
         switch (selectedMenu) {
             case "dashboard":
                 return (
-                    <div
-                        style={{
-                            padding: "24px",
-                            background: "#fff",
-                            borderRadius: "8px",
-                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                        }}
-                    >
-                        <Title level={3} style={{ margin: 0, display: "inline-block", whiteSpace: "nowrap" }}>
-                            Welcome, {user?.username}!
-                        </Title>
-                        <Button type="primary" onClick={logout}>
-                            Logout
-                        </Button>
+                    <div style={contentContainerStyle}>
+                        <div style={contentItemStyle}>
+                            <Title level={3}>Welcome, {user?.username}!</Title>
+                            {error ? (
+                                <p style={{ color: "red" }}>{error}</p>
+                            ) : (
+                                <Table
+                                    dataSource={products}
+                                    loading={loading}
+                                    rowKey="id"
+                                    style={{ marginTop: "16px" }}
+                                >
+                                    <Table.Column title="Name" dataIndex="product_name" key="product_name" />
+                                    <Table.Column title="Price" dataIndex="Price" key="Price" />
+                                    <Table.Column title="Stock" dataIndex="product_stock" key="product_stock" />
+                                </Table>
+                            )}
+                        </div>
+                        <div style={contentItemStyle}>
+                            <Title level={3}>Quick Info</Title>
+                            <p>Product list is ready for viewing!</p>
+                        </div>
                     </div>
                 );
             case "profile":
                 return (
-                    <div
-                        style={{
-                            padding: "24px",
-                            background: "#fff",
-                            borderRadius: "8px",
-                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                        }}
-                    >
-                        <Title level={3} style={{ margin: 0, display: "inline-block", whiteSpace: "nowrap" }}>
-                            Profile Details
-                        </Title>
-                        <p>Username: {user?.username}</p>
-                        <p>Email: {user?.email}</p>
+                    <div style={contentContainerStyle}>
+                        <div style={contentItemStyle}>
+                            <Title level={3}>Profile Details</Title>
+                            <Form
+                                name="register"
+                                layout="vertical"
+                                initialValues={{
+                                    first_name: user?.first_name,
+                                    last_name: user?.last_name,
+                                    gender: user?.gender,
+                                    telephone: user?.telephone,
+                                    email: user?.email,
+                                    address: user?.address,
+                                }}
+                            >
+                                <Form.Item
+                                    label="First Name"
+                                    name="first_name"
+                                    rules={[{ required: true, message: "Please enter your first name!" }]}
+                                >
+                                    <Input placeholder={user?.first_name} />
+                                </Form.Item>
+                                <Form.Item
+                                    label="Last Name"
+                                    name="last_name"
+                                    rules={[{ required: true, message: "Please enter your last name!" }]}
+                                >
+                                    <Input placeholder={user?.first_name} />
+                                </Form.Item>
+                                <Form.Item
+                                    label="Gender"
+                                    name="gender"
+                                    rules={[{ required: true, message: "Please select your gender!" }]}
+                                >
+                                    <Select placeholder={user?.gender}>
+                                        <Option value="L">Male</Option>
+                                        <Option value="P">Female</Option>
+                                    </Select>
+                                </Form.Item>
+                                <Form.Item
+                                    label="Telephone"
+                                    name="telephone"
+                                    rules={[
+                                        { required: true, message: "Please enter your telephone number!" },
+                                        { pattern: /^\d+$/, message: "Telephone must be numeric!" },
+                                    ]}
+                                >
+                                    <Input placeholder={user?.telephone} />
+                                </Form.Item>
+                                <Form.Item
+                                    label="Email"
+                                    name="email"
+                                    rules={[
+                                        { required: true, message: "Please enter your email!" },
+                                        { type: "email", message: "Please enter a valid email!" },
+                                    ]}
+                                >
+                                </Form.Item>                                    
+                                <Input placeholder={user?.email} />
+
+                                <Form.Item
+                                    label="Address"
+                                    name="Address"
+                                    rules={[
+                                        { required: true, message: "Please enter your email!" },
+                                        { type: "email", message: "Please enter a valid email!" },
+                                    ]}
+                                >
+                                </Form.Item>                                    
+                                <Input placeholder={user?.address} />
+                            </Form>
+
+                        </div>
                     </div>
                 );
             default:
                 return <div>No content available</div>;
         }
+    };
+
+    const contentContainerStyle = {
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        padding: "24px",
+        background: "#fff",
+        borderRadius: "8px",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    };
+
+    const contentItemStyle = {
+        width: "48%",
+        marginBottom: "16px",
+        minWidth: "300px",
     };
 
     return (
@@ -126,20 +221,12 @@ const Dashboard = () => {
                         alignItems: "center",
                     }}
                 >
-                    <Title level={3} style={{ margin: 0, display: "inline-block", whiteSpace: "nowrap" }}>
+                    <Title level={3} style={{ margin: 0 }}>
                         Dashboard
                     </Title>
                 </Header>
-                <Content
-                    style={{
-                        margin: "16px",
-                        padding: "24px",
-                        background: "#fff",
-                        borderRadius: "8px",
-                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
-                    {renderContent()} 
+                <Content style={{ margin: "16px" }}>
+                    {renderContent()}
                 </Content>
             </Layout>
         </Layout>

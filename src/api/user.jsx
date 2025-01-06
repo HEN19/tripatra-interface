@@ -39,11 +39,12 @@ export const getProfile = async (token) => {
     try {
         const response = await axios.get(`${API_URL}/profile`, {
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `${token}`,
             },
         });
         return response.data;
     } catch (error) {
-        throw error.response?.data || "Failed to fetch profile!";
+        const errorMessage = error.response?.data?.message || "Get List Product Failed!";
+        throw new Error(errorMessage);    
     }
 };
