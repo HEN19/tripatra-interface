@@ -35,6 +35,10 @@ const Registration = () => {
         if (!error) navigate("/login");
     };
 
+    const handleLogin= async =>{
+        navigate("/login");
+    }
+
     return (
         <div className="register-container" style={{ maxWidth: "500px", margin: "0 auto", padding: "50px" }}>
             <Title level={2} style={{ textAlign: "center" }}>
@@ -136,6 +140,10 @@ const Registration = () => {
                     </Button>
                 </Form.Item>
             </Form>
+
+            <Button type="primary" htmlType="button" block onClick={handleLogin} loading={loading}>
+                        {loading ? "Login..." : "Login"}
+            </Button>
         </div>
     );
 };
