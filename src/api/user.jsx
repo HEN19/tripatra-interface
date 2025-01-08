@@ -44,7 +44,28 @@ export const getProfile = async (token) => {
         });
         return response.data;
     } catch (error) {
-        const errorMessage = error.response?.data?.message || "Get List Product Failed!";
+        const errorMessage = error.response?.data?.message || "Get Profile User Failed!";
+        throw new Error(errorMessage);    
+    }
+};
+
+export const updateProfile = async (token, first_name, last_name, gender, telephone, email, address) => {
+    try {
+        const response = await axios.put(`${API_URL}/profile`, {
+            first_name,
+            last_name,
+            gender,
+            telephone,
+            email,
+            address
+        }, {
+            headers: {
+                Authorization: `${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || "Update User Failed!";
         throw new Error(errorMessage);    
     }
 };

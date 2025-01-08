@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { createContext, useState, useContext } from "react";
-import { login, register, getProfile } from "../api/user"; // Import API functions
+import { login, register, getProfile, updateProfile } from "../api/user"; // Import API functions
 import { useNavigate } from "react-router-dom";
 
 // Create a context for managing user authentication state
@@ -82,11 +82,25 @@ export const AuthProvider = ({ children }) => {
         setError("");
         navigate("/login")
     };
+
+    //update function
+    const handleUpdate = async (firstname,lastname, gender,telephone,email, address) => {
+        setLoading(true);
+        try {
+            const data = await updateProfile(token,firstname,lastname, gender,telephone,email, address);
+            setUser(data); 
+            setError(""); 
+        } catch (error) {
+            setError(error);
+        } finally {
+            setLoading(false);
+        }
+    }
     
 
     return (
         <AuthContext.Provider
-            value={{ user, handleLogin, handleRegister, handleProfile, logout, error, loading }}
+            value={{ user, handleLogin, handleRegister, handleProfile, logout, handleUpdate, error, loading }}
         >
             {children}
         </AuthContext.Provider>

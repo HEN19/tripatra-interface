@@ -4,16 +4,22 @@ const API_URL = "http://localhost:8080/v1/product";
 
 
 // Insert Request
-export const insertProduct = async(product_name,price,stock) => {
+export const insertProduct = async(token, product_name,price,stock) => {
     try {
-        const response = await axios.post(`${API_URL}/`, {
+        const response = await axios.post(`${API_URL}`, {
             product_name,
             price,
             stock
+        },
+        { 
+            headers: {
+                Authorization: `${token}` 
+            }
         });
-        return response.data
+
+        return response.API.content
     } catch (error) {
-        throw error.response?.data || "Insert Data Failed !!"
+        throw error.response?.API.content || "Insert Data Failed !!"
     }
 };
 
@@ -30,5 +36,39 @@ export const getListProduct = async(token) => {
     } catch (error) {
         const errorMessage = error.response?.data?.message || "Get List Product Failed!";
         throw new Error(errorMessage);
+    }
+}
+
+export const updateDataProduct = async( token, id, product_name,price,stock) => {
+    try {
+        const response = await axios.put(`${API_URL}/${id}`, {
+            product_name,
+            price,
+            stock
+        },
+        { 
+            headers: {
+                Authorization: `${token}` 
+            }
+        });
+
+        return response.API.content
+    } catch (error) {
+        throw error.response?.API.content || "Update Data Failed !!"
+    }
+}
+
+export const deleteDataProduct = async( token, id,) => {
+    try {
+        const response = await axios.delete(`${API_URL}/${id}`, 
+        { 
+            headers: {
+                Authorization: `${token}` 
+            }
+        });
+
+        return response.API.content
+    } catch (error) {
+        throw error.response?.API.content || "Delete Data Failed !!"
     }
 }
